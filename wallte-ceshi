@@ -41,3 +41,4 @@ echo "助记词: $MNEMONIC" > $WALLET_INFO_FILE
 echo "地址: $ADDRESS" >> $WALLET_INFO_FILE
 echo "私钥: $PRIVATE_KEY" >> $WALLET_INFO_FILE
 echo "钱包信息已导出到文件: $WALLET_INFO_FILE"
+
