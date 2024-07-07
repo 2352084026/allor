@@ -4,12 +4,23 @@
 sudo apt-get update
 sudo apt-get install -y make gcc
 
+# 处理可能的 Bad Gateway 错误
+sudo apt-get update --fix-missing
+
 # 检查 Go 是否已安装
 if ! command -v go &> /dev/null
 then
     echo "Go 未安装。正在安装 Go..."
     curl -OL https://go.dev/dl/go1.21.linux-amd64.tar.gz
+    if [ $? -ne 0 ]; then
+        echo "下载 Go 失败。请检查网络连接。"
+        exit 1
+    fi
     sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
+    if [ $? -ne 0 ]; then
+        echo "解压 Go 失败。请检查下载文件。"
+        exit 1
+    fi
     export PATH=$PATH:/usr/local/go/bin
 else
     echo "Go 已安装。"
@@ -20,6 +31,10 @@ if ! command -v allorad &> /dev/null
 then
     echo "allorad 未安装。正在安装 allorad..."
     curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.2.7
+    if [ $? -ne 0 ]; then
+        echo "安装 allorad 失败。请检查安装步骤。"
+        exit 1
+    fi
 else
     echo "allorad 已安装。"
 fi
@@ -65,5 +80,6 @@ echo "助记词: $MNEMONIC" > $WALLET_INFO_FILE
 echo "地址: $ADDRESS" >> $WALLET_INFO_FILE
 echo "私钥: $PRIVATE_KEY" >> $WALLET_INFO_FILE
 echo "钱包信息已导出到文件: $WALLET_INFO_FILE"
+
 
 
