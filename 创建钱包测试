@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# 检查 allorad 是否已安装
+if ! command -v allorad &> /dev/null
+then
+    echo "allorad 未安装。请按照安装说明进行安装。"
+    exit 1
+fi
+
+# 创建钱包
+echo "正在创建钱包..."
+WALLET_NAME="testkey"
+WALLET_OUTPUT=$(allorad keys add $WALLET_NAME --output json)
+
+# 检查钱包是否创建成功
+if [[ $? -ne 0 ]]; then
+    echo "钱包创建失败。"
+    exit 1
+fi
+
+# 解析 JSON 输出
+MNEMONIC=$(echo $WALLET_OUTPUT | jq -r '.mnemonic')
+ADDRESS=$(echo $WALLET_OUTPUT | jq -r '.address')
+PRIVATE_KEY=$(echo $WALLET_OUTPUT | jq -r '.priv_key')
+
+if [ -z "$MNEMONIC" ] || [ -z "$ADDRESS" ] || [ -z "$PRIVATE_KEY" ]; then
+    echo "未能提取钱包信息。"
+    exit 1
+fi
+
+# 输出钱包信息和助记词
+echo "钱包创建成功。"
+echo "钱包名称: $WALLET_NAME"
+echo "助记词: $MNEMONIC"
+echo "地址: $ADDRESS"
+echo "私钥: $PRIVATE_KEY"
+
+# 将助记词、私钥和地址保存到文件
+WALLET_INFO_FILE="${WALLET_NAME}_wallet_info.txt"
+echo "助记词: $MNEMONIC" > $WALLET_INFO_FILE
+echo "地址: $ADDRESS" >> $WALLET_INFO_FILE
+echo "私钥: $PRIVATE_KEY" >> $WALLET_INFO_FILE
+echo "钱包信息已导出到文件: $WALLET_INFO_FILE"
