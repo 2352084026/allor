@@ -1,9 +1,33 @@
 #!/bin/bash
 
+# 更新系统并安装必要的构建工具
+sudo apt-get update
+sudo apt-get install -y make gcc
+
+# 检查 Go 是否已安装
+if ! command -v go &> /dev/null
+then
+    echo "Go 未安装。正在安装 Go..."
+    curl -OL https://go.dev/dl/go1.21.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+else
+    echo "Go 已安装。"
+fi
+
 # 检查 allorad 是否已安装
 if ! command -v allorad &> /dev/null
 then
-    echo "allorad 未安装。请按照安装说明进行安装。"
+    echo "allorad 未安装。正在安装 allorad..."
+    curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.2.7
+else
+    echo "allorad 已安装。"
+fi
+
+# 验证 allorad 安装
+if ! command -v allorad &> /dev/null
+then
+    echo "allorad 安装失败。请检查安装步骤。"
     exit 1
 fi
 
@@ -41,4 +65,5 @@ echo "助记词: $MNEMONIC" > $WALLET_INFO_FILE
 echo "地址: $ADDRESS" >> $WALLET_INFO_FILE
 echo "私钥: $PRIVATE_KEY" >> $WALLET_INFO_FILE
 echo "钱包信息已导出到文件: $WALLET_INFO_FILE"
+
 
