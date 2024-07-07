@@ -11,12 +11,12 @@ sudo apt-get update --fix-missing
 if ! command -v go &> /dev/null
 then
     echo "Go 未安装。正在安装 Go..."
-    curl -OL https://go.dev/dl/go1.21.linux-amd64.tar.gz
+    wget https://go.dev/dl/go1.21.linux-amd64.tar.gz
     if [ $? -ne 0 ]; then
         echo "下载 Go 失败。请检查网络连接。"
         exit 1
     fi
-    sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.21.linux-amd64.tar.gz
     if [ $? -ne 0 ]; then
         echo "解压 Go 失败。请检查下载文件。"
         exit 1
@@ -80,6 +80,7 @@ echo "助记词: $MNEMONIC" > $WALLET_INFO_FILE
 echo "地址: $ADDRESS" >> $WALLET_INFO_FILE
 echo "私钥: $PRIVATE_KEY" >> $WALLET_INFO_FILE
 echo "钱包信息已导出到文件: $WALLET_INFO_FILE"
+
 
 
 
