@@ -29,6 +29,16 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo groupadd docker || true
 sudo usermod -aG docker $USER
 
+# 设置 Docker 国内镜像源
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": ["https://registry.docker-cn.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
 # 安装 Docker Compose
 VER=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
 curl -L "https://github.com/docker/compose/releases/download/${VER}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -43,7 +53,7 @@ source $HOME/.bash_profile
 
 # 克隆并构建 Allora 链
 git clone https://github.com/allora-network/allora-chain.git
-cd allora-chain && make all
+cd allora-chain && make all || { echo "Failed to build allora-chain"; exit 1; }
 
 # 钱包设置
 echo "选择一个选项: "
@@ -212,6 +222,7 @@ docker ps
 echo "════════════════════════════════════════════════════════════"
 echo "║     风男提示你安装完成                      ║"
 echo "════════════════════════════════════════════════════════════"
+
 
 
 
