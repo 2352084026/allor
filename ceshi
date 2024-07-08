@@ -2,26 +2,21 @@
 
 print_intro() {
     echo "════════════════════════════════════════════════════════════"
-    echo "║       欢迎使用 Allora-Worker B0T!!                       ║"
-    echo "║                                                          ║"
-    echo "║     关注我的推特:                                        ║"
-    echo "║     https://twitter.com/wuya518                          ║"
-    echo "║                                                          ║"
-    echo "║     TG订阅:                                              ║"
-    echo "║     - https://t.me/new5151                               ║"
-    echo "╚════════════════════════════════════════════════════════════"
-    read -p '您是否愿意继续? (Y/N): ' answer
+    echo "                     风男真他妈帅,微信4561310"
+    echo "     风男提示你脚本免费开源，请勿相信任何其他人收费"
+    echo "╚═══════════════════════════════════════════════════════════"
+    read -p '是否继续? (Y/N): ' answer
     if [[ "$answer" != "Y" && "$answer" != "y" ]]; then
-        echo '正在终止安装。'
+        echo '安装终止.'
         exit 1
     fi
 }
 
 print_intro
 
-# 更新并安装所需的软件包
+# 更新系统并安装所需软件包
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y ca-certificates zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev curl git wget make jq build-essential pkg-config lsb-release libssl-dev libreadline-dev libffi-dev gcc screen unzip lz4 expect
+sudo apt install -y ca-certificates zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev curl git wget make jq build-essential pkg-config lsb-release libssl-dev libreadline-dev libffi-dev gcc screen unzip lz4
 
 # 安装 Python
 sudo apt install -y python3 python3-pip
@@ -52,29 +47,16 @@ cd allora-chain && make all
 
 # 钱包设置
 echo "选择一个选项: "
-echo "1. 使用已经存在的钱包"
-echo "2. 创建一个新钱包"
-read -p "输入选择 1 或 2: " option
+echo "1. 使用已有钱包"
+echo "2. 创建新钱包"
+read -p "输入选项编号: " option
 
+# 根据用户选择进行钱包操作
 if [ "$option" == "1" ]; then
-    read -p "输入您的钱包助记词: " seed_phrase
-    expect -c "
-    spawn allorad keys add testkey --recover
-    expect \"Enter your bip39 mnemonic\"
-    send \"$seed_phrase\r\"
-    expect eof
-    "
+    read -p "输入你的助记词: " seed_phrase
+    allorad keys add testkey --recover <<< "$seed_phrase"
 else
-    wallet_output=$(allorad keys add testkey)
-    echo "$wallet_output"
-    wallet_seed=$(echo "$wallet_output" | grep -oP '(?<=助记词: ).*')
-    allora_address=$(echo "$wallet_output" | grep -oP '(?<=地址: ).*')
-    allora_private_key=$(echo "$wallet_output" | grep -oP '(?<=私钥: ).*')
-
-    echo "您的新钱包信息如下："
-    echo "助记词: $wallet_seed"
-    echo "Allora地址: $allora_address"
-    echo "私钥: $allora_private_key"
+    allorad keys add testkey
 fi
 
 # 克隆并设置预测节点
@@ -84,6 +66,7 @@ cd basic-coin-prediction-node
 mkdir worker-data head-data
 sudo chmod -R 777 worker-data head-data
 
+# 运行 Docker 容器设置私钥
 sudo docker run -it --entrypoint=bash -v $(pwd)/head-data:/data alloranetwork/allora-inference-base:latest -c "mkdir -p /data/keys && (cd /data/keys && allora-keys)"
 sudo docker run -it --entrypoint=bash -v $(pwd)/worker-data:/data alloranetwork/allora-inference-base:latest -c "mkdir -p /data/keys && (cd /data/keys && allora-keys)"
 
@@ -91,9 +74,10 @@ echo "你的 head-id 是: "
 cat head-data/keys/identity
 echo
 
-read -p "再次输入你的 head-id: " head_id
-read -p "输入您的钱包助记词: " wallet_seed
+read -p "重新输入你的 head-id: " head_id
+read -p "输入你的钱包助记词: " wallet_seed
 
+# 创建 Docker Compose 配置文件
 cat <<EOF > docker-compose.yml
 version: '3'
 services:
@@ -112,7 +96,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/inference/ETH"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 12
     volumes:
       - ./inference-data:/app/data
@@ -151,7 +135,7 @@ services:
       - "-c"
       - |
         if [ ! -f /data/keys/priv.bin ]; then
-          echo "正在生成新的私钥..."
+          echo "生成新的私钥..."
           mkdir -p /data/keys
           cd /data/keys
           allora-keys
@@ -187,7 +171,7 @@ services:
       - "-c"
       - |
         if [ ! -f /data/keys/priv.bin ]; then
-          echo "正在生成新的私钥..."
+          echo "生成新的私钥..."
           mkdir -p /data/keys
           cd /data/keys
           allora-keys
@@ -219,14 +203,16 @@ volumes:
   head-data:
 EOF
 
+# 构建并启动 Docker Compose 服务
 docker-compose build
 docker-compose up -d
-
+cd allora-chain && docker compose up -d  && docker start $(docker ps -aq) && cd ~/basic-coin-prediction-node && docker compose up -d  && docker start $(docker ps -aq)
 docker ps
 
 echo "════════════════════════════════════════════════════════════"
-echo "║     脚本原作者 CIPHER_AIRDROP                              ║"
+echo "║     风男提示你安装完成                      ║"
 echo "════════════════════════════════════════════════════════════"
+
 
 
 
